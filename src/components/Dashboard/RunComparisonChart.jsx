@@ -21,6 +21,7 @@ import {
     CHART_SERIES, EmptyState, ToggleGroup, gridProps,
 } from '../ui';
 import { cn } from '../../utils/cn';
+import { buildBenchmarkLabel } from '../../utils/dashboardHelpers';
 
 // One-bar-per-run comparison chart. Metrics are grouped into families
 // (TTFT / TPOT / ITL / E2E / observability) so the user picks the family
@@ -117,20 +118,6 @@ const formatVal = (v, dec) => {
 };
 
 const truncateLabel = (s, n = 22) => (s && s.length > n ? s.slice(0, n - 1) + '…' : s);
-
-const buildBenchmarkLabel = (key, sample, brv02CustomLabels) => {
-    if (sample?.source?.startsWith('brv02:')) {
-        const runId = sample.source.slice('brv02:'.length);
-        if (brv02CustomLabels?.[runId]) return brv02CustomLabels[runId];
-        const qps = sample.workload?.target_qps;
-        const stage = sample.workload?.stage;
-        const parts = [sample.model_name || sample.model || 'run'];
-        if (stage != null) parts.push(`stage ${stage}`);
-        if (qps != null) parts.push(`${qps} QPS`);
-        return parts.join(' · ');
-    }
-    return sample?.model_name || sample?.model || key.slice(0, 30);
-};
 
 // Tooltip: list every selected stat for the hovered benchmark, with the
 // raw value and (if baseline set) %diff.

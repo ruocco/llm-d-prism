@@ -418,9 +418,30 @@ export const formatOriginLabel = (origin) => {
     return origin;
 };
 
+// Display label for one entry in a comparison chart.
+//
+// metadata.model_name comes first because it is the field backfilled for every
+// source, and the one carrying the " [variant]" / " [configuration]" suffix that
+// tells otherwise-identical archived runs apart (e.g. "Qwen3-0.6B [kv]" vs
+// "Qwen3-0.6B [none]").
+export const buildBenchmarkLabel = (key, sample, brv02CustomLabels) => {
+    const modelName = sample?.metadata?.model_name || sample?.model_name || sample?.model;
+    if (sample?.source?.startsWith('brv02:')) {
+        const runId = sample.source.slice('brv02:'.length);
+        if (brv02CustomLabels?.[runId]) return brv02CustomLabels[runId];
+        const qps = sample.workload?.target_qps;
+        const stage = sample.workload?.stage;
+        const parts = [modelName || 'run'];
+        if (stage != null) parts.push(`stage ${stage}`);
+        if (qps != null) parts.push(`${qps} QPS`);
+        return parts.join(' · ');
+    }
+    return modelName || key.slice(0, 30);
+};
+
 export const getBenchmarkKey = (d) => {
     if (!d) return 'unknown';
-    
+
     // For local BRV02 benchmark runs, group them as a single run instead of by stage.
     if (d.source && d.source.startsWith('brv02:')) {
         return d.source;
