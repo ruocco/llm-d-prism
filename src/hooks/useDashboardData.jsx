@@ -1251,9 +1251,14 @@ export const useDashboardData = (initialState, dashboardState) => {
                     suffix = ` [${newD.metadata.configuration}]`;
                 }
                 if (suffix) {
-                    newD.model = newD.model + suffix;
-                    newD.model_name = newD.model_name + suffix;
-                    newD.metadata.model_name = newD.metadata.model_name + suffix;
+                    // All three derive from metadata.model_name, the only one
+                    // backfilled above: the top-level model_name is optional
+                    // here, and appending to it directly yielded the literal
+                    // string "undefined [kv]" whenever it was absent.
+                    const suffixed = newD.metadata.model_name + suffix;
+                    newD.model = suffixed;
+                    newD.model_name = suffixed;
+                    newD.metadata.model_name = suffixed;
                 }
 
                 return newD;
