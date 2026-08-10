@@ -17,10 +17,12 @@ import { cn } from '../../utils/cn';
 
 // Segmented control for metric/mode selectors (e.g. TTFT | TPOT | E2E).
 // options: [{ value, label, disabled? }]
-export function ToggleGroup({ options, value, onChange, size = 'sm', fullWidth = false, className }) {
+export function ToggleGroup({ options, value, onChange, size = 'sm', fullWidth = false, className, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy }) {
     return (
         <div
             role="group"
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
             className={cn(
                 'inline-flex items-center rounded-lg border border-theme-border bg-slate-100 dark:bg-slate-900 p-0.5 gap-0.5',
                 fullWidth && 'flex w-full',

@@ -17,7 +17,7 @@ import { CacheManager } from '../utils/cacheManager';
 import { QualityParser } from '../utils/qualityParser';
 import { normalizeHardware, normalizeModelName } from '../utils/dataParser';
 import { parseJsonEntry, parseLogFile, parseLpgManifest, parseLpgConfig } from '../utils/dataParser';
-import { parseReportV02, groupStagesIntoRuns, stageToEntry } from '../utils/benchmarkReportV02Parser';
+import { parseReportV02, groupStagesIntoRuns, stageToEntry, stripDerivedTimeSeries, rehydrateDerivedTimeSeries } from '../utils/benchmarkReportV02Parser';
 import { scanLocalBenchmarks } from '../utils/gcsScanner';
 import { useGCS } from './useGCS';
 import { useGIQ } from './useGIQ';
@@ -94,7 +94,9 @@ export const useDashboardData = (initialState, dashboardState) => {
     const [brv02Runs, setBrv02Runs] = useState(() => {
         try {
             const saved = localStorage.getItem('prism_brv02_runs');
-            return saved ? JSON.parse(saved) : [];
+            // Time series are stripped before persisting, so rebuild them from
+            // the stored rawReport.
+            return saved ? rehydrateDerivedTimeSeries(JSON.parse(saved)) : [];
         } catch { return []; }
     });
     const [brv02Error, setBrv02Error] = useState(null);
@@ -119,7 +121,7 @@ export const useDashboardData = (initialState, dashboardState) => {
 
     useEffect(() => {
         try {
-            localStorage.setItem('prism_brv02_runs', JSON.stringify(brv02Runs));
+            localStorage.setItem('prism_brv02_runs', JSON.stringify(stripDerivedTimeSeries(brv02Runs)));
         } catch (e) {
             console.error("Failed to persist brv02 runs to LocalStorage:", e);
         }
